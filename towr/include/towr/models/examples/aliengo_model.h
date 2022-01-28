@@ -37,33 +37,34 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 namespace towr {
 
 /**
- * @brief The Kinematics of the quadruped robot Aliengo(Copying model of ANYmal for now).
+ * @brief The Kinematics of the quadruped robot Aliengo(Ratio set with ANYmal).
  */
 class AliengoKinematicModel : public KinematicModel {
 public:
   AliengoKinematicModel () : KinematicModel(4)
   {
-    const double x_nominal_b = 0.34;
-    const double y_nominal_b = 0.19;
-    const double z_nominal_b = -0.42;
+    // Computed from 
+    const double x_nominal_b = 0.24;
+    const double y_nominal_b = 0.134;
+    const double z_nominal_b = -0.38;
 
     nominal_stance_.at(LF) <<  x_nominal_b,   y_nominal_b, z_nominal_b;
     nominal_stance_.at(RF) <<  x_nominal_b,  -y_nominal_b, z_nominal_b;
     nominal_stance_.at(LH) << -x_nominal_b,   y_nominal_b, z_nominal_b;
     nominal_stance_.at(RH) << -x_nominal_b,  -y_nominal_b, z_nominal_b;
 
-    max_dev_from_nominal_ << 0.15, 0.1, 0.10;
+    max_dev_from_nominal_ << 0.10, 0.07, 0.09;  // Adjusted to have same ration with the ANYMal
   }
 };
 
 /**
- * @brief The Dynamics of the quadruped robot Aliengo(Copying model of ANYmal for now).
+ * @brief The Dynamics of the quadruped robot Aliengo(Ratio set with of ANYmal).
  */
 class AliengoDynamicModel : public SingleRigidBodyDynamics {
 public:
   AliengoDynamicModel()
-  : SingleRigidBodyDynamics(29.5,
-                    0.946438, 1.94478, 2.01835, 0.000938112, -0.00595386, -0.00146328,
+  : SingleRigidBodyDynamics(21,  // Mass from datasheet, Inertia adjusted to have same ratio with ANYMal. Should change!
+                    0.673736, 1.38442, 1.43679, 0.000667809, -0.00423834, -0.00104166,
                     4) {}
 };
 
