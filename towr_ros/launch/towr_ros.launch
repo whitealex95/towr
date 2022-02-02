@@ -29,5 +29,7 @@
   
   <!--  Launches the URDF visualizers  --> 
   <include file="$(find xpp_hyq)/launch/all.launch"></include>
+  <!--  Launches the aliengo's URDF visualizers  --> 
+  <include file="$(find xpp_aliengo)/launch/all.launch"></include>
        
 </launch>
