@@ -210,4 +210,25 @@ ChimneyLR::GetHeightDerivWrtY (double x, double y) const
   return dzdy;
 }
 
+// GTSTAIRS
+double
+GTStairs::GetHeight (double x, double y) const
+{
+  double h = 0.0;
+  double down_step_start_ = step_start_ + (n_steps-1)*step_width_ + width_top_;
+  if ( (x - step_start_) / step_width_ < n_steps-1 
+    && x >= step_start_)
+    h = step_height_ * int((x - step_start_) / step_width_ +1);
+
+  if (x >= step_start_ + (n_steps-1)*step_width_ 
+    && x <= down_step_start_)
+    h = step_height_ * n_steps;
+
+  if (x > down_step_start_
+    && x <= down_step_start_ + (n_steps-1)*step_width_)
+    h = step_height_*int(n_steps - (x - down_step_start_) / step_width_);
+
+  return h;
+}
+
 } /* namespace towr */

@@ -165,6 +165,21 @@ private:
   const double x_end2_ = x_start_+2*length_;
 };
 
+/**
+ * @brief Sample terrain with a two-steps in height in x-direction.
+ */
+class GTStairs : public HeightMap {
+public:
+  double GetHeight(double x, double y) const override;
+
+private:
+  int n_steps = 4;
+  double step_start_ = 1.0;
+  double step_width_ = 0.28;
+  double step_height_ = 0.18;
+  double width_top_ = 1.0;
+};
+
 /** @}*/
 
 } /* namespace towr */

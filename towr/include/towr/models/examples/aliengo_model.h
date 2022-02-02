@@ -43,10 +43,11 @@ class AliengoKinematicModel : public KinematicModel {
 public:
   AliengoKinematicModel () : KinematicModel(4)
   {
-    // Computed from 
-    const double x_nominal_b = 0.24;
-    const double y_nominal_b = 0.134;
-    const double z_nominal_b = -0.38;
+    // Computed from Matlab
+    // robot.centerOfMass(): 0.0115 0.0018 -0.0179
+    const double x_nominal_b = 0.24 - 0.012;
+    const double y_nominal_b = 0.134 - 0.002;
+    const double z_nominal_b = -0.38 + 0.018;
 
     nominal_stance_.at(LF) <<  x_nominal_b,   y_nominal_b, z_nominal_b;
     nominal_stance_.at(RF) <<  x_nominal_b,  -y_nominal_b, z_nominal_b;

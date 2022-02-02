@@ -32,7 +32,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <cassert>
 #include <numeric>   // std::accumulate
 #include <algorithm> // std::transform
-
+#include <iostream>
 #include <towr/initialization/monoped_gait_generator.h>
 #include <towr/initialization/biped_gait_generator.h>
 #include <towr/initialization/quadruped_gait_generator.h>
@@ -58,7 +58,11 @@ GaitGenerator::GetPhaseDurations (double t_total, EE ee) const
   std::vector<double> durations;
   for (auto d : GetNormalizedPhaseDurations(ee))
     durations.push_back(d*t_total);
-
+  std::cout << GetNormalizedPhaseDurations(ee).size() << std::endl;
+  std::cout << "EE: " << ee << std::endl;
+  std::cout << "DURATIONS: " << durations.size() << std::endl;
+  for (auto i: durations)
+    std::cout << i << ' ';
   return durations;
 }
 
