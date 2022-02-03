@@ -88,6 +88,16 @@ target_link_libraries(${PROJECT_NAME}-example
 )
 add_test(${PROJECT_NAME}-example ${PROJECT_NAME}-example)
 
+add_executable(${PROJECT_NAME}-example2
+  test/hopper_example2.cc
+)
+target_link_libraries(${PROJECT_NAME}-example2
+  PRIVATE
+    ${PROJECT_NAME} 
+    ifopt::ifopt_ipopt
+)
+add_test(${PROJECT_NAME}-example2 ${PROJECT_NAME}-example2)
+
 # unit tests of costs/constraints
 find_package(GTest QUIET)
 if (TARGET GTest::GTest) # only build when modern targets exists

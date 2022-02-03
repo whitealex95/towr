@@ -76,6 +76,7 @@ QuadrupedGaitGenerator::QuadrupedGaitGenerator ()
 void
 QuadrupedGaitGenerator::SetCombo (Combos combo)
 {
+  ::std::cout << "\nGAIT COMBO : " << combo << ::std::endl;
   switch (combo) {
     case C0: SetGaits({Stand, Walk2, Walk2, Walk2, Walk2E, Stand}); break; // overlap-walk
     case C1: SetGaits({Stand, Run2, Run2, Run2, Run2E, Stand});     break; // fly trot
@@ -223,6 +224,7 @@ QuadrupedGaitGenerator::GetStrideTrot () const
 QuadrupedGaitGenerator::GaitInfo
 QuadrupedGaitGenerator::GetStrideTrotFly () const
 {
+  // This is where trot seq. is made
   double stand   = 0.4;
   double flight = 0.1;
   auto times =
