@@ -65,6 +65,7 @@ private:
   xpp::State3dEuler goal_geom_;
   int terrain_;
   int gait_combo_;
+  int gait_step_;
   int robot_;
   bool visualize_trajectory_;
   bool play_initialization_;

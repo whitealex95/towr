@@ -45,7 +45,7 @@ namespace towr {
 
 enum YCursorRows {HEADING=6, OPTIMIZE=8, VISUALIZE, INITIALIZATION, PLOT,
                   REPLAY_SPEED, GOAL_POS, GOAL_ORI, ROBOT,
-                  GAIT, OPTIMIZE_GAIT, TERRAIN, DURATION, CLOSE, END};
+                  GAIT, GAIT_STEP, OPTIMIZE_GAIT, TERRAIN, DURATION, CLOSE, END};
 static constexpr int Y_STATUS      = END+1;
 static constexpr int X_KEY         = 1;
 static constexpr int X_DESCRIPTION = 10;
@@ -70,6 +70,7 @@ TowrUserInterface::TowrUserInterface ()
   robot_      = RobotModel::Monoped;
   terrain_    = HeightMap::FlatID;
   gait_combo_ = GaitGenerator::C0;
+  gait_step_ = 6;  // default combo count
   total_duration_ = 2.4;
   visualize_trajectory_ = false;
   plot_trajectory_ = false;
@@ -156,6 +157,13 @@ TowrUserInterface::PrintScreen() const
   wmove(stdscr, GAIT, X_VALUE);
   printw("%s", std::to_string(gait_combo_).c_str());
 
+  wmove(stdscr, GAIT_STEP, X_KEY);
+  printw("n/m");
+  wmove(stdscr, GAIT_STEP, X_DESCRIPTION);
+  printw("Gait Steps");
+  wmove(stdscr, GAIT_STEP, X_VALUE);
+  printw("%d", gait_step_);
+
   wmove(stdscr, OPTIMIZE_GAIT, X_KEY);
   printw("y");
   wmove(stdscr, OPTIMIZE_GAIT, X_DESCRIPTION);
@@ -240,6 +248,15 @@ TowrUserInterface::CallbackKey (int c)
       gait_combo_ = AdvanceCircularBuffer(gait_combo_, GaitGenerator::COMBO_COUNT);
       break;
 
+    // gait number of steps++
+    case 'n':
+      if (gait_step_>3) gait_step_--;
+      break;
+    // gait number of steps--
+    case 'm':
+      gait_step_++;
+      break;
+
     case 'r':
       robot_ = AdvanceCircularBuffer(robot_, RobotModel::ROBOT_COUNT);
       break;
@@ -305,6 +322,7 @@ void TowrUserInterface::PublishCommand()
   msg.optimize                 = optimize_;
   msg.terrain                  = terrain_;
   msg.gait                     = gait_combo_;
+  msg.gait_n                   = gait_step_;
   msg.robot                    = robot_;
   msg.optimize_phase_durations = optimize_phase_durations_;
   msg.plot_trajectory          = plot_trajectory_;
