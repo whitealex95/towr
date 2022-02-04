@@ -93,6 +93,15 @@ public:
   virtual void SetCombo(Combos combo) = 0;
 
   /**
+   * @brief Sets a specific sequence of gaits.
+   *
+   * The derived class decides what each combo maps to. This function then fills
+   * the times_ and contacts_ variables accordingly.
+   * Additional parameter N is included to adjust the number of steps
+   */
+  virtual void SetComboN(Combos combo, int N) = 0;
+
+  /**
    * @brief  Sets the times_ and contacts_ variables according to the gaits.
    * @param gaits The sequence of steps which defines gait. For example use @c {Stand,Walk1,Walk1,Stand} to declare walking gait with two steps.
    */

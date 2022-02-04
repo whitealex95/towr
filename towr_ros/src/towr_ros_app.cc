@@ -69,7 +69,8 @@ public:
     // for a variety of robots (walk, trot, pace, ...).
     auto gait_gen_ = GaitGenerator::MakeGaitGenerator(n_ee);
     auto id_gait   = static_cast<GaitGenerator::Combos>(msg.gait);
-    gait_gen_->SetCombo(id_gait);
+    // gait_gen_->SetCombo(id_gait); // Same as SetComboN(id_gait, 6);
+    gait_gen_->SetComboN(id_gait, 6);
     for (int ee=0; ee<n_ee; ++ee) {
       params.ee_phase_durations_.push_back(gait_gen_->GetPhaseDurations(msg.total_duration, ee));
       params.ee_in_contact_at_start_.push_back(gait_gen_->IsInContactAtStart(ee));

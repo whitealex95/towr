@@ -57,6 +57,7 @@ private:
   GaitInfo GetStrideGallopHop() const;
 
   void SetCombo(Combos combo) override;
+  void SetComboN(Combos combo, int N) override;
 
   // naming convention:, where the circle is is contact, front is right ->.
   ContactState I_; // flight

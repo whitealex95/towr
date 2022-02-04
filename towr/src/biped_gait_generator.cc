@@ -61,6 +61,23 @@ BipedGaitGenerator::SetCombo (Combos combo)
   }
 }
 
+void
+BipedGaitGenerator::SetComboN (Combos combo, int N)
+{
+  std::vector<Gaits> gaits={};
+  gaits.push_back(Stand);
+  switch (combo) {
+    case C0: gaits.insert(gaits.end(),N-3, Walk1); gaits.push_back(Walk1); break;
+    case C1: gaits.insert(gaits.end(),N-3, Run1); gaits.push_back(Run1); break; // overlap-walk
+    case C2: gaits.insert(gaits.end(),N-3, Hop1); gaits.push_back(Hop1); break; // pace
+    case C3: gaits.insert(gaits.end(),N-3, Hop2); gaits.push_back(Hop2); break; // bound
+    case C4: gaits.insert(gaits.end(),N-3, Hop5); gaits.push_back(Hop5); break; // gallop
+    default: assert(false); std::cout << "Gait not defined\n"; break;
+  }
+  gaits.push_back(Stand);
+  SetGaits(gaits);
+}
+
 BipedGaitGenerator::GaitInfo
 BipedGaitGenerator::GetGait (Gaits gait) const
 {

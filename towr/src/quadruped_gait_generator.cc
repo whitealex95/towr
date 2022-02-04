@@ -76,7 +76,7 @@ QuadrupedGaitGenerator::QuadrupedGaitGenerator ()
 void
 QuadrupedGaitGenerator::SetCombo (Combos combo)
 {
-  ::std::cout << "\nGAIT COMBO : " << combo << ::std::endl;
+  ::std::cout << "\nGAIT COMBO : " << combo << " with default N(=6):" <<::std::endl;
   switch (combo) {
     case C0: SetGaits({Stand, Walk2, Walk2, Walk2, Walk2E, Stand}); break; // overlap-walk
     case C1: SetGaits({Stand, Run2, Run2, Run2, Run2E, Stand});     break; // fly trot
@@ -85,6 +85,24 @@ QuadrupedGaitGenerator::SetCombo (Combos combo)
     case C4: SetGaits({Stand, Hop3, Hop3, Hop3, Hop3E, Stand}); break; // gallop
     default: assert(false); std::cout << "Gait not defined\n"; break;
   }
+}
+
+void
+QuadrupedGaitGenerator::SetComboN (Combos combo, int N)
+{
+  ::std::cout << "\nGAIT COMBO : " << combo << " with N(>=3):" << N <<::std::endl;
+  std::vector<Gaits> gaits={};
+  gaits.push_back(Stand);
+  switch (combo) {
+    case C0: gaits.insert(gaits.end(),N-3, Walk2); gaits.push_back(Walk2E); break;
+    case C1: gaits.insert(gaits.end(),N-3, Run2); gaits.push_back(Run2E); break; // overlap-walk
+    case C2: gaits.insert(gaits.end(),N-3, Run3); gaits.push_back(Run3E); break; // pace
+    case C3: gaits.insert(gaits.end(),N-3, Hop1); gaits.push_back(Hop1E); break; // bound
+    case C4: gaits.insert(gaits.end(),N-3, Hop3); gaits.push_back(Hop3E); break; // gallop
+    default: assert(false); std::cout << "Gait not defined\n"; break;
+  }
+  gaits.push_back(Stand);
+  SetGaits(gaits);
 }
 
 QuadrupedGaitGenerator::GaitInfo

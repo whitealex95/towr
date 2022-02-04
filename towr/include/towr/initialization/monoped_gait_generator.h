@@ -56,6 +56,7 @@ private:
   ContactState x_ = ContactState(1, false); // flight
 
   void SetCombo(Combos combo) override;
+  void SetComboN(Combos combo, int N) override;
 };
 
 } /* namespace towr */

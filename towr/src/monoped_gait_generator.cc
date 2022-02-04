@@ -47,6 +47,23 @@ MonopedGaitGenerator::SetCombo (Combos combo)
   }
 }
 
+void
+MonopedGaitGenerator::SetComboN (Combos combo, int N)
+{
+  std::vector<Gaits> gaits={};
+  gaits.push_back(Stand);
+  switch (combo) {
+    case C0: gaits.insert(gaits.end(),N-3, Hop1); gaits.push_back(Hop1); break;
+    case C1: gaits.insert(gaits.end(),N-3, Hop1); gaits.push_back(Hop1); break; // overlap-walk
+    case C2: gaits.insert(gaits.end(),N-3, Hop1); gaits.push_back(Hop1); break; // pace
+    case C3: gaits.insert(gaits.end(),N-3, Hop2); gaits.push_back(Hop2); break; // bound
+    case C4: gaits.insert(gaits.end(),N-3, Hop2); gaits.push_back(Hop2); break; // gallop
+    default: assert(false); std::cout << "Gait not defined\n"; break;
+  }
+  gaits.push_back(Stand);
+  SetGaits(gaits);
+}
+
 MonopedGaitGenerator::GaitInfo
 MonopedGaitGenerator::GetGait (Gaits gait) const
 {
