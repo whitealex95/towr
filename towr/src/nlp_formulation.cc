@@ -356,9 +356,10 @@ NlpFormulation::MakeForcesCost(double weight) const
 {
   CostPtrVec cost;
 
-  for (int ee=0; ee<params_.GetEECount(); ee++)
+  for (int ee=0; ee<params_.GetEECount(); ee++){
     cost.push_back(std::make_shared<NodeCost>(id::EEForceNodes(ee), kPos, Z, weight));
-
+    // cost.push_back(std::make_shared<NodeCost>(id::EEForceNodes(ee), kPos, Y, weight));
+  }
   return cost;
 }
 

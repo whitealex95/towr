@@ -47,6 +47,7 @@ Parameters::Parameters ()
   // parameters related to specific constraints (only used when it is added as well)
   force_limit_in_normal_direction_ = 1000;
   dt_constraint_range_of_motion_ = 0.08;
+  // dt_constraint_range_of_motion_ = 0.08 * 0.5;
   dt_constraint_dynamic_ = 0.1;
   dt_constraint_base_motion_ = duration_base_polynomial_/4.; // only for base RoM constraint
   bound_phase_duration_ = std::make_pair(0.2, 1.0);  // used only when optimizing phase durations, so gait
@@ -61,6 +62,7 @@ Parameters::Parameters ()
 
   // optional costs to e.g penalize endeffector forces
   // costs_.push_back({ForcesCostID, 1.0}); weighed by 1.0 relative to other costs
+  // costs_.push_back({ForcesCostID, 1.0}); // weighed by 1.0 relative to other costs
 
   // bounds on final 6DoF base state
   bounds_final_lin_pos_ = {X,Y};
