@@ -231,4 +231,34 @@ GTStairs::GetHeight (double x, double y) const
   return h;
 }
 
+// Obstacle1
+double
+Obstacle1::GetHeight (double x, double y) const
+{
+  double h = 0.0;
+
+  // modelled as parabola
+  double center_distance = (x-center_x)*(x-center_x) + (y-center_y)*(y-center_y);
+  if ( center_distance <= radius * radius)
+    h = height_;
+
+  return h;
+}
+
+
+// GTSTAIRS
+double
+Obstacle2::GetHeight (double x, double y) const
+{
+  double h = 0.0;
+
+  // modelled as parabola
+  double center_distance = (x-center_x)*(x-center_x) + (y-center_y)*(y-center_y);
+  if ( center_distance <= radius * radius)
+    h = height_;
+
+  return h;
+}
+
+
 } /* namespace towr */

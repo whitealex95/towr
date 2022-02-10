@@ -63,6 +63,8 @@ public:
   Parameters GetTowrParameters(int n_ee, const TowrCommandMsg& msg) const override
   {
     Parameters params;
+  // dt_constraint_range_of_motion_ = 0.08 * 0.5;
+    // params.dt_constraint_dynamic_ = 0.08 * 0.5;
 
     // Instead of manually defining the initial durations for each foot and
     // step, for convenience we use a GaitGenerator with some predefined gaits
@@ -75,6 +77,7 @@ public:
       params.ee_phase_durations_.push_back(gait_gen_->GetPhaseDurations(msg.total_duration, ee));
       params.ee_in_contact_at_start_.push_back(gait_gen_->IsInContactAtStart(ee));
     }
+
 
     // Here you can also add other constraints or change parameters
     // params.constraints_.push_back(Parameters::BaseRom);

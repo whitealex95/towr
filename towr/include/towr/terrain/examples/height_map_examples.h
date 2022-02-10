@@ -180,6 +180,37 @@ private:
   double width_top_ = 1.0;
 };
 
+/**
+ * @brief Sample terrain with a two-steps in height in x-direction.
+ */
+class Obstacle1 : public HeightMap {
+public:
+  double GetHeight(double x, double y) const override;
+
+private:
+  double center_x = 1;
+  double center_y = 0;
+  double radius = 0.5;
+  double height_     = 1; // [m]
+};
+
+/**
+ * @brief Sample terrain with a two-steps in height in x-direction.
+ */
+class Obstacle2 : public HeightMap {
+public:
+  double GetHeight(double x, double y) const override;
+
+private:
+  double center_x = 1;
+  double center_y = 0;
+  double radius = 0.5;
+  double height_     = -1; // [m]
+  double eps_ = 0.03; // approximate as slope
+  const double slope_ = height_/eps_;
+
+};
+
 /** @}*/
 
 } /* namespace towr */
