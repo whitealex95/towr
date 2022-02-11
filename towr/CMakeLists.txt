@@ -94,7 +94,8 @@ add_executable(${PROJECT_NAME}-example2
 target_link_libraries(${PROJECT_NAME}-example2
   PRIVATE
     ${PROJECT_NAME} 
-    ifopt::ifopt_ipopt
+    # ifopt::ifopt_ipopt
+    ifopt::ifopt_snopt
 )
 add_test(${PROJECT_NAME}-example2 ${PROJECT_NAME}-example2)
 

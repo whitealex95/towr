@@ -58,6 +58,7 @@ TowrRosInterface::TowrRosInterface ()
                                     (xpp_msgs::robot_parameters, 1);
 
   solver_ = std::make_shared<ifopt::IpoptSolver>();
+  // solver_ = std::make_shared<ifopt::SnoptSolver>();
 
   visualization_dt_ = 0.01;
 }
@@ -93,7 +94,7 @@ TowrRosInterface::UserCommandCallback(const TowrCommandMsg& msg)
   SetTowrInitialState();
 
   // solver parameters
-  SetIpoptParameters(msg);
+  // SetIpoptParameters(msg);
 
   // visualization
   PublishInitialState();

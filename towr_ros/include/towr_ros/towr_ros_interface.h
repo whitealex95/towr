@@ -42,6 +42,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <towr/nlp_formulation.h>
 #include <ifopt/ipopt_solver.h>
+#include <ifopt/snopt_solver.h>
 
 
 namespace towr {
@@ -86,6 +87,7 @@ protected:
 
   NlpFormulation formulation_;         ///< the default formulation, can be adapted
   ifopt::IpoptSolver::Ptr solver_; ///< NLP solver, could also use SNOPT.
+  // ifopt::SnoptSolver::Ptr solver_; ///< For using SNOPT solver... (Seems to be slower and generate worse gaits on Aliengo case...)
 
 private:
   SplineHolder solution; ///< the solution splines linked to the opt-variables.

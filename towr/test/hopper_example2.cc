@@ -32,7 +32,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <towr/terrain/examples/height_map_examples.h>
 #include <towr/nlp_formulation.h>
-#include <ifopt/ipopt_solver.h>
+// #include <ifopt/ipopt_solver.h>
+#include <ifopt/snopt_solver.h>
 
 
 using namespace towr;
@@ -86,9 +87,12 @@ int main()
 
   // Choose ifopt solver (IPOPT or SNOPT), set some parameters and solve.
   // solver->SetOption("derivative_test", "first-order");
-  auto solver = std::make_shared<ifopt::IpoptSolver>();
-  solver->SetOption("jacobian_approximation", "exact"); // "finite difference-values"
-  solver->SetOption("max_cpu_time", 20.0);
+  auto solver = std::make_shared<ifopt::SnoptSolver>();
+  // auto solver = std::make_shared<ifopt::IpoptSolver>();
+  // solver->SetOption("linear_solver", "ma27"); // mumps(Default), ma27, ma57
+
+  // solver->SetOption("jacobian_approximation", "exact"); // "finite difference-values"
+  // solver->SetOption("max_cpu_time", 20.0); // 40.0 for ros_app
   solver->Solve(nlp);
 
   // Can directly view the optimization variables through:
