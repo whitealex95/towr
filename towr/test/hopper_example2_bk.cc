@@ -35,13 +35,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <ifopt/ipopt_solver.h>
 // #include <ifopt/snopt_solver.h>
 
-// #include <rosbag/bag.h> // for saving
-
-// #include <xpp_states/convert.h>
-// #include <xpp_msgs/topic_names.h>
-// #include <xpp_msgs/TerrainInfo.h>
-
-
 
 using namespace towr;
 
@@ -51,18 +44,20 @@ using namespace towr;
 // visualization and plotting can be found here:
 // towr_ros/src/towr_ros_app.cc
 
-
-void plan1(ifopt::Problem& nlp, SplineHolder& solution, double init_x, double init_y, double fin_x, double fin_y){
+void plan1(int init_x, int init_y, int final_x, int final_y){
   NlpFormulation formulation;
 
   formulation.terrain_ = std::make_shared<FlatGround>(0.0);
   formulation.model_ = RobotModel(RobotModel::Monoped);
-  formulation.initial_base_.lin.at(towr::kPos) << init_x, init_y, 0.5;
-  formulation.initial_ee_W_.push_back(Eigen::Vector3d(init_x, init_y, 0));
-  formulation.final_base_.lin.at(towr::kPos) << fin_x, fin_y, 0.5;
+  formulation.initial_base_.lin.at(kPos).z() = 0.5;
+  formulation.initial_ee_W_.push_back(Eigen::Vector3d::Zero());
+  formulation.final_base_.lin.at(towr::kPos) << 1.0, 0.0, 0.5;
 
-  formulation.params_.ee_phase_durations_.push_back({0.4, 0.2, 0.4, 0.2, 0.4, 0.2, 0.2});
+  formulation.params_.ee_phase_durations_.push_back({0.2, 0.1, 0.2, 0.1, 0.2, 0.1, 0.2});
   formulation.params_.ee_in_contact_at_start_.push_back(true);
+
+  ifopt::Problem nlp;
+  SplineHolder solution;
   for (auto c : formulation.GetVariableSets(solution))
     nlp.AddVariableSet(c);
   for (auto c : formulation.GetConstraints(solution))
@@ -75,52 +70,57 @@ void plan1(ifopt::Problem& nlp, SplineHolder& solution, double init_x, double in
   solver->SetOption("max_cpu_time", 20.0);
   solver->Solve(nlp);
 }
-
-void plan2(ifopt::Problem& nlp, SplineHolder& solution, SplineHolder& last_solution, double fin_x, double fin_y){
-  double t = last_solution.base_linear_->GetTotalTime();
-
-  NlpFormulation formulation;
-
-  formulation.terrain_ = std::make_shared<FlatGround>(0.0);
-  formulation.model_ = RobotModel(RobotModel::Monoped);
-  // get last ones
-  formulation.initial_base_.lin.at(towr::kPos) << last_solution.base_linear_->GetPoint(t).p();
-  formulation.initial_base_.ang.at(towr::kPos) << last_solution.base_angular_->GetPoint(t).p();
-  formulation.initial_ee_W_.push_back(last_solution.ee_motion_.at(0)->GetPoint(t).p().transpose());
-  formulation.final_base_.lin.at(towr::kPos) << fin_x, fin_y, 0.5;
-
-  formulation.params_.ee_phase_durations_.push_back({0.4, 0.2, 0.4, 0.2, 0.4, 0.2, 0.2});
-  formulation.params_.ee_in_contact_at_start_.push_back(true);
-
-  for (auto c : formulation.GetVariableSets(solution))
-    nlp.AddVariableSet(c);
-  for (auto c : formulation.GetConstraints(solution))
-    nlp.AddConstraintSet(c);
-  for (auto c : formulation.GetCosts())
-    nlp.AddCostSet(c);
-  
-  auto solver = std::make_shared<ifopt::IpoptSolver>();
-  solver->SetOption("jacobian_approximation", "exact");
-  solver->SetOption("max_cpu_time", 20.0);
-  solver->Solve(nlp);
-}
-
-
 int main()
 {
-  ::std::vector<ifopt::Problem> nlp_list(2);
-  ::std::vector<SplineHolder> solution_list(2);
+  NlpFormulation formulation;
 
-  plan1(nlp_list[0], solution_list[0], 0, 0, 1, 0);
+  // terrain
+  formulation.terrain_ = std::make_shared<FlatGround>(0.0);
 
-  // rosbag::Bag bag;
+  // Kinematic limits and dynamic parameters of the hopper
+  formulation.model_ = RobotModel(RobotModel::Monoped);
 
+  // set the initial position of the hopper
+  formulation.initial_base_.lin.at(kPos).z() = 0.5;
+  formulation.initial_ee_W_.push_back(Eigen::Vector3d::Zero());
 
+  // define the desired goal state of the hopper
+  formulation.final_base_.lin.at(towr::kPos) << 1.0, 0.0, 0.5;
 
-  plan2(nlp_list[1], solution_list[1], solution_list[0], 2, 0);
-  // std::string bag_file = "towr_trajectory.bag";
-  // SaveOptimizationAsRosbag(bag_file, )
-  // plan1(nlp_list[2], solution_list[2], 2, 0, 3, 0);
+  // Parameters that define the motion. See c'tor for default values or
+  // other values that can be modified.
+  // First we define the initial phase durations, that can however be changed
+  // by the optimizer. The number of swing and stance phases however is fixed.
+  // alternating stance and swing:     ____-----_____-----_____-----_____
+  // formulation.params_.ee_phase_durations_.push_back({0.4, 0.2, 0.4, 0.2, 0.4, 0.2, 0.2});
+  // formulation.params_.ee_phase_durations_.push_back({0.4, 0.2, 0.4, 0.2, 0.4, 0.2, 0.4, 0.2, 0.2});
+  formulation.params_.ee_phase_durations_.push_back({0.2, 0.1, 0.2, 0.1, 0.2, 0.1, 0.2});
+  formulation.params_.ee_in_contact_at_start_.push_back(true);
+
+  // Initialize the nonlinear-programming problem with the variables,
+  // constraints and costs.
+  ifopt::Problem nlp;
+  SplineHolder solution;
+  for (auto c : formulation.GetVariableSets(solution))
+    nlp.AddVariableSet(c);
+  for (auto c : formulation.GetConstraints(solution))
+    nlp.AddConstraintSet(c);
+  for (auto c : formulation.GetCosts())
+    nlp.AddCostSet(c);
+
+  // You can add your own elements to the nlp as well, simply by calling:
+  // nlp.AddVariablesSet(your_custom_variables);
+  // nlp.AddConstraintSet(your_custom_constraints);
+
+  // Choose ifopt solver (IPOPT or SNOPT), set some parameters and solve.
+  // solver->SetOption("derivative_test", "first-order");
+  auto solver = std::make_shared<ifopt::SnoptSolver>();
+  // auto solver = std::make_shared<ifopt::IpoptSolver>();
+  // solver->SetOption("linear_solver", "ma27"); // mumps(Default), ma27, ma57
+
+  // solver->SetOption("jacobian_approximation", "exact"); // "finite difference-values"
+  // solver->SetOption("max_cpu_time", 20.0); // 40.0 for ros_app
+  solver->Solve(nlp);
 
   // Can directly view the optimization variables through:
   // Eigen::VectorXd x = nlp.GetVariableValues()
@@ -128,43 +128,32 @@ int main()
   // variables and query their values at specific times:
   using namespace std;
   cout.precision(2);
-  // nlp_list[1].PrintCurrent(); // view variable-set, constraint violations, indices,...
+  nlp.PrintCurrent(); // view variable-set, constraint violations, indices,...
   cout << fixed;
   cout << "\n====================\nMonoped trajectory:\n====================\n";
 
   double t = 0.0;
-  double t_start = 0.0;
-  SplineHolder solution;
-  // for (auto solution : solution_list) {
-  for (int j = 0; j<2; j++){
-    solution = solution_list[j];
-    cout << "\n====================\n solution " << j << " :\n====================\n";
-    t = 0.0;
-    while (t<=solution.base_linear_->GetTotalTime() + 1e-5) {
-      cout << "t=" << t + t_start << "\n";
-      cout << "Base linear position x,y,z:   \t";
-      cout << solution.base_linear_->GetPoint(t).p().transpose() << "\t[m]" << endl;
+  while (t<=solution.base_linear_->GetTotalTime() + 1e-5) {
+    cout << "t=" << t << "\n";
+    cout << "Base linear position x,y,z:   \t";
+    cout << solution.base_linear_->GetPoint(t).p().transpose() << "\t[m]" << endl;
 
-      cout << "Base Euler roll, pitch, yaw:  \t";
-      Eigen::Vector3d rad = solution.base_angular_->GetPoint(t).p();
-      cout << (rad/M_PI*180).transpose() << "\t[deg]" << endl;
+    cout << "Base Euler roll, pitch, yaw:  \t";
+    Eigen::Vector3d rad = solution.base_angular_->GetPoint(t).p();
+    cout << (rad/M_PI*180).transpose() << "\t[deg]" << endl;
 
-      cout << "Foot position x,y,z:          \t";
-      cout << solution.ee_motion_.at(0)->GetPoint(t).p().transpose() << "\t[m]" << endl;
+    cout << "Foot position x,y,z:          \t";
+    cout << solution.ee_motion_.at(0)->GetPoint(t).p().transpose() << "\t[m]" << endl;
 
-      cout << "Contact force x,y,z:          \t";
-      cout << solution.ee_force_.at(0)->GetPoint(t).p().transpose() << "\t[N]" << endl;
+    cout << "Contact force x,y,z:          \t";
+    cout << solution.ee_force_.at(0)->GetPoint(t).p().transpose() << "\t[N]" << endl;
 
-      bool contact = solution.phase_durations_.at(0)->IsContactPhase(t);
-      std::string foot_in_contact = contact? "yes" : "no";
-      cout << "Foot in contact:              \t" + foot_in_contact << endl;
+    bool contact = solution.phase_durations_.at(0)->IsContactPhase(t);
+    std::string foot_in_contact = contact? "yes" : "no";
+    cout << "Foot in contact:              \t" + foot_in_contact << endl;
 
-      cout << endl;
+    cout << endl;
 
-      t += 0.2;
-
-    }
-    cout << "\n###############3? \n" << t << "\n" << solution.base_linear_->GetTotalTime() << "\n################?\n"<< endl;
-    t_start += solution.base_linear_->GetTotalTime();
+    t += 0.2;
   }
 }

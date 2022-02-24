@@ -3,6 +3,7 @@ project(towr VERSION 1.3.2)
 
 set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH})
 find_package(ifopt 2.0.1 REQUIRED)
+find_package(rosbag)
 
 
 ###########
@@ -94,8 +95,8 @@ add_executable(${PROJECT_NAME}-example2
 target_link_libraries(${PROJECT_NAME}-example2
   PRIVATE
     ${PROJECT_NAME} 
-    # ifopt::ifopt_ipopt
-    ifopt::ifopt_snopt
+    ifopt::ifopt_ipopt
+    # ifopt::ifopt_snopt
 )
 add_test(${PROJECT_NAME}-example2 ${PROJECT_NAME}-example2)
 

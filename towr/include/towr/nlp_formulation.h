@@ -127,6 +127,8 @@ private:
   CostPtrVec GetCost(const Parameters::CostName& id, double weight) const;
   CostPtrVec MakeForcesCost(double weight) const;
   CostPtrVec MakeEEMotionCost(double weight) const;
+  // add base motion cost for trajectory tracking
+  CostPtrVec MakeBaseMotionCost(double weight) const;
 };
 
 } /* namespace towr */

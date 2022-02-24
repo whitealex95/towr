@@ -53,9 +53,10 @@ NlpFormulation::NlpFormulation ()
   using namespace std;
   cout << "\n";
   cout << "************************************************************\n";
-  cout << " TOWR - Trajectory Optimization for Walking Robots (v1.4)\n";
+  cout << " TOWR_v2 - Trajectory Optimization for Walking Robots (v1.4k)\n";
   cout << "                \u00a9 Alexander W. Winkler\n";
   cout << "           https://github.com/ethz-adrl/towr\n";
+  cout << "           Edited by Jeonghwan Kim\n";
   cout << "************************************************************";
   cout << "\n\n";
 }
@@ -104,6 +105,7 @@ NlpFormulation::MakeBaseVariables () const
   double x = final_base_.lin.p().x();
   double y = final_base_.lin.p().y();
   double z = terrain_->GetHeight(x,y) - model_.kinematic_model_->GetNominalStanceInBase().front().z();
+  ::std::cout << "\n\nLOOK]] " << z << ::std::endl;
   Vector3d final_pos(x, y, z);
 
   spline_lin->SetByLinearInterpolation(initial_base_.lin.p(), final_pos, params_.GetTotalTime());
@@ -374,6 +376,14 @@ NlpFormulation::MakeEEMotionCost(double weight) const
   }
 
   return cost;
+}
+
+NlpFormulation::CostPtrVec
+NlpFormulation::MakeBaseMotionCost(double weight) const
+{
+  CostPtrVec cost;
+
+  // TODO
 }
 
 } /* namespace towr */

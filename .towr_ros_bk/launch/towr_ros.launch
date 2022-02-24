@@ -32,8 +32,4 @@
   <!--  Launches the aliengo's URDF visualizers  --> 
   <include file="$(find xpp_aliengo)/launch/all.launch"></include>
        
-
-  <node pkg="towr_gui_kivy" name="main" type="main.py" output="screen">
-  </node>
-
 </launch>

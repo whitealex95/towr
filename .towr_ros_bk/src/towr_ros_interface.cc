@@ -43,17 +43,23 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace towr {
 
+
 TowrRosInterface::TowrRosInterface ()
 {
   ::ros::NodeHandle n;
+
   user_command_sub_ = n.subscribe(towr_msgs::user_command, 1,
                                   &TowrRosInterface::UserCommandCallback, this);
+
   initial_state_pub_  = n.advertise<xpp_msgs::RobotStateCartesian>
                                           (xpp_msgs::robot_state_desired, 1);
+
   robot_parameters_pub_  = n.advertise<xpp_msgs::RobotParameters>
                                     (xpp_msgs::robot_parameters, 1);
+
   solver_ = std::make_shared<ifopt::IpoptSolver>();
   // solver_ = std::make_shared<ifopt::SnoptSolver>();
+
   visualization_dt_ = 0.01;
 }
 
@@ -61,10 +67,11 @@ BaseState
 TowrRosInterface::GetGoalState(const TowrCommandMsg& msg) const
 {
   BaseState goal;
-  goal.lin.at(kPos) = xpp::Convert::ToXpp(msg.goal_lin.pos); // return vector3d
+  goal.lin.at(kPos) = xpp::Convert::ToXpp(msg.goal_lin.pos);
   goal.lin.at(kVel) = xpp::Convert::ToXpp(msg.goal_lin.vel);
   goal.ang.at(kPos) = xpp::Convert::ToXpp(msg.goal_ang.pos);
   goal.ang.at(kVel) = xpp::Convert::ToXpp(msg.goal_ang.vel);
+
   return goal;
 }
 
@@ -82,15 +89,12 @@ TowrRosInterface::UserCommandCallback(const TowrCommandMsg& msg)
 
   int n_ee = formulation_.model_.kinematic_model_->GetNumberOfEndeffectors();
   formulation_.params_ = GetTowrParameters(n_ee, msg);
-    formulation_.initial_base_.lin.at(towr::kPos) << 0,0, 0.5;
-  formulation_.initial_ee_W_.push_back(Eigen::Vector3d(10,10, 10));
-
   formulation_.final_base_ = GetGoalState(msg);
 
   SetTowrInitialState();
 
   // solver parameters
-  SetIpoptParameters(msg);
+  // SetIpoptParameters(msg);
 
   // visualization
   PublishInitialState();
@@ -119,60 +123,6 @@ TowrRosInterface::UserCommandCallback(const TowrCommandMsg& msg)
         + " --quiet " + bag_file).c_str());
   }
 
-  // Create Second Goal /////////////////////////////////////////////////////
-  ///////////////////////////////////////////////////////////////////////////
-
-    // robot model
-  formulation_ = NlpFormulation();
-  formulation_.model_ = RobotModel(static_cast<RobotModel::Robot>(msg.robot));
-  robot_params_msg = BuildRobotParametersMsg(formulation_.model_);
-  robot_parameters_pub_.publish(robot_params_msg);
-
-  // terrain
-  terrain_id = static_cast<HeightMap::TerrainID>(msg.terrain);
-  formulation_.terrain_ = HeightMap::MakeTerrain(terrain_id);
-
-  n_ee = formulation_.model_.kinematic_model_->GetNumberOfEndeffectors();
-  formulation_.params_ = GetTowrParameters(n_ee, msg);
-
-  auto last_solution = solution;
-  double t = last_solution.base_linear_->GetTotalTime();
-  formulation_.initial_base_.lin.at(towr::kPos) << last_solution.base_linear_->GetPoint(t).p();
-  formulation_.initial_base_.ang.at(towr::kPos) << last_solution.base_angular_->GetPoint(t).p();
-  formulation_.initial_ee_W_.push_back(last_solution.ee_motion_.at(0)->GetPoint(t).p().transpose());
-
-  // formulation_.final_base_ = GetGoalState(msg);
-  formulation_.final_base_.lin.at(towr::kPos) << 0, 0, 0.5;
-
-  SetTowrInitialState();
-
-  // solver parameters
-  SetIpoptParameters(msg);
-  std::string bag_file2 = "towr_trajectory2.bag";
-  solution = towr::SplineHolder();
-
-  // visualization
-  PublishInitialState();
-  if (msg.optimize || msg.play_initialization) {
-    nlp_ = ifopt::Problem();
-    for (auto c : formulation_.GetVariableSets(solution))
-      nlp_.AddVariableSet(c);
-    for (auto c : formulation_.GetConstraints(solution))
-      nlp_.AddConstraintSet(c);
-    for (auto c : formulation_.GetCosts())
-      nlp_.AddCostSet(c);
-
-    solver_->Solve(nlp_);
-    SaveOptimizationAsRosbag(bag_file2, robot_params_msg, msg, false);
-  }
-  // playback using terminal commands
-  if (msg.replay_trajectory || msg.play_initialization || msg.optimize) {
-    int success = system(("rosbag play --topics "
-        + xpp_msgs::robot_state_desired + " "
-        + xpp_msgs::terrain_info
-        + " -r " + std::to_string(msg.replay_speed)
-        + " --quiet " + bag_file2).c_str());
-  }
   if (msg.plot_trajectory) {
     int success = system(("killall rqt_bag; rqt_bag " + bag_file + "&").c_str());
   }
