@@ -140,6 +140,34 @@ void solve_trajectory(ifopt::Problem& nlp, SplineHolder& solution,
   solver->Solve(nlp);
 }
 
+double print_trajectory(SplineHolder& solution, double t_start){ // return t_duration
+  using namespace std;
+  double t = 0.0;
+  while (t<=solution.base_linear_->GetTotalTime() + 1e-5) {
+    cout << "t=" << t + t_start << "\n";
+    cout << "Base linear position x,y,z:   \t";
+    cout << solution.base_linear_->GetPoint(t).p().transpose() << "\t[m]" << endl;
+
+    cout << "Base Euler roll, pitch, yaw:  \t";
+    Eigen::Vector3d rad = solution.base_angular_->GetPoint(t).p();
+    cout << (rad/M_PI*180).transpose() << "\t[deg]" << endl;
+
+    cout << "Foot position x,y,z:          \t";
+    cout << solution.ee_motion_.at(0)->GetPoint(t).p().transpose() << "\t[m]" << endl;
+
+    cout << "Contact force x,y,z:          \t";
+    cout << solution.ee_force_.at(0)->GetPoint(t).p().transpose() << "\t[N]" << endl;
+
+    bool contact = solution.phase_durations_.at(0)->IsContactPhase(t);
+    std::string foot_in_contact = contact? "yes" : "no";
+    cout << "Foot in contact:              \t" + foot_in_contact << endl;
+    cout << endl;
+    t += 0.2;
+  }
+  return solution.base_linear_->GetTotalTime();
+
+}
+
 int main()
 {
   ::std::vector<ifopt::Problem> nlp_list(2);
@@ -166,9 +194,8 @@ int main()
       init_base_linear, init_base_angular, init_ee_W,
       goal_base_linear, goal_base_angular);
 
-    auto solution = solution_list[j];
     auto t_final = solution_list[j].base_linear_->GetTotalTime();
-    auto final_base_linear = solution.base_linear_->GetPoint(t_final).p();
+    auto final_base_linear = solution_list[j].base_linear_->GetPoint(t_final).p();
     auto final_base_angular = solution_list[j].base_angular_->GetPoint(t_final).p();
     auto final_ee_W = solution_list[j].ee_motion_.at(0)->GetPoint(t_final).p();
     
@@ -186,31 +213,10 @@ int main()
   double t_start = 0.0;
 
   for (int j = 0; j<2; j++){
+    cout << "\n====================\n trajectory " << j << " :\n====================\n";
     auto solution = solution_list[j];
-    cout << "\n====================\n solution " << j << " :\n====================\n";
-    t = 0.0;
-    while (t<=solution.base_linear_->GetTotalTime() + 1e-5) {
-      cout << "t=" << t + t_start << "\n";
-      cout << "Base linear position x,y,z:   \t";
-      cout << solution.base_linear_->GetPoint(t).p().transpose() << "\t[m]" << endl;
-
-      cout << "Base Euler roll, pitch, yaw:  \t";
-      Eigen::Vector3d rad = solution.base_angular_->GetPoint(t).p();
-      cout << (rad/M_PI*180).transpose() << "\t[deg]" << endl;
-
-      cout << "Foot position x,y,z:          \t";
-      cout << solution.ee_motion_.at(0)->GetPoint(t).p().transpose() << "\t[m]" << endl;
-
-      cout << "Contact force x,y,z:          \t";
-      cout << solution.ee_force_.at(0)->GetPoint(t).p().transpose() << "\t[N]" << endl;
-
-      bool contact = solution.phase_durations_.at(0)->IsContactPhase(t);
-      std::string foot_in_contact = contact? "yes" : "no";
-      cout << "Foot in contact:              \t" + foot_in_contact << endl;
-      cout << endl;
-      t += 0.2;
-    }
-    t_start += solution.base_linear_->GetTotalTime();
+    double t_duration = print_trajectory(solution, t_start);
+    t_start += t_duration;
   }
 }
 
