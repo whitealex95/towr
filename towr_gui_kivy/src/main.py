@@ -17,7 +17,8 @@ from kivy.core.window import Window
 from kivy.utils import get_color_from_hex
 
 # custom msg
-from towr_gui_kivy.msg import TowrCommand2
+from towr_gui_kivy.msg import TowrCommand2, TowrCommandSeq
+from xpp_msgs.msg import StateLin3d
 # Clear entire color to whitish./
 Window.clearcolor = get_color_from_hex('#f0f9f9')
 
@@ -147,7 +148,8 @@ class TestApp(FloatLayout):
                 return True
             return super(TestApp, self).on_touch_move(touch)
 
-class PublishManager:
+
+class PublishManager_bk:
     def __init__(self):
         msg = TowrCommand2()
         msg.goal_lin.pos.x = 1.3
@@ -176,6 +178,43 @@ class PublishManager:
                 self.msg.terrain = val
 
         pub.publish(self.msg)
+
+
+class PublishManager:
+    def __init__(self):
+        msg = TowrCommandSeq()
+        for j in range(3):
+            goal_lin = StateLin3d()
+            goal_lin.pos.x = (j+1) * 1.3
+            msg.goal_lin_seq.append(goal_lin)
+
+            goal_ang = StateLin3d()
+            msg.goal_ang_seq.append(goal_ang)
+
+        msg.total_duration = 3          # reach in 3sec
+        msg.replay_trajectory = False
+        msg.replay_speed = 1            # x1.00 speed
+        msg.play_initialization = False
+        msg.plot_trajectory = False
+        msg.optimize = True             # optimize trajectory
+        msg.robot = 0                   # 0: monoped, 1: biped, 4: Aliengo
+        msg.terrain = 0
+        msg.gait = 0                    # 0: walk, 1: trot
+        msg.gait_n = 6                  # default: 6 gait blocks prob?
+        msg.optimize_phase_durations = False
+
+        self.msg = msg
+
+    def change_and_publish(self, **kwargs):
+        for key, val in kwargs.items():
+            print(key, val)
+            if key=='robot':
+                self.msg.robot = val
+            elif key=='terrain':
+                self.msg.terrain = val
+
+        pub.publish(self.msg)
+
 
 class SubscribeManager:
     def __init__(self) -> None:
@@ -235,7 +274,7 @@ def sub_callback(msg):
 
 if __name__ == '__main__':
 
-    pub = rospy.Publisher('/towr/user_command2', TowrCommand2, queue_size=1)
+    pub = rospy.Publisher('/towr/user_command_seq', TowrCommandSeq, queue_size=1)
     rospy.Subscriber("/towr/ros_vis_traj", std_msgs.msg.String, sub_callback)
     rospy.init_node('ros_gui_kivy', anonymous=False)
     pm = PublishManager()
