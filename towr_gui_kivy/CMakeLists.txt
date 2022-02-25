@@ -17,6 +17,7 @@ add_message_files(
   FILES
   TowrCommandGUI.msg
   TowrCommand2.msg
+  TowrCommandSeq.msg
 )
 
 

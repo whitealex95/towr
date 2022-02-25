@@ -7,14 +7,14 @@
 
   <!-- TOWR: Start the optimizer and GUI-->
   <group unless="$(arg debug)">
-    <include file="$(find towr_ros)/launch/towr_nodes.launch">
+    <include file="$(find towr_ros)/launch/towr_nodes2.launch">
       <arg name="gdb" value="" />
     </include>
   </group>
   
   <!-- TOWR: Start the optimizer and GUI with gdb -->
   <group if="$(arg debug)">
-    <include file="$(find towr_ros)/launch/towr_nodes.launch">
+    <include file="$(find towr_ros)/launch/towr_nodes2.launch">
       <arg name="gdb" value="gdb -ex run --args" />
     </include>
   </group>
@@ -32,5 +32,8 @@
   <!--  Launches the aliengo's URDF visualizers  --> 
   <include file="$(find xpp_aliengo)/launch/all.launch"></include>
        
+
+  <node pkg="towr_gui_kivy" name="main" type="main.py" output="screen">
+  </node>
 
 </launch>

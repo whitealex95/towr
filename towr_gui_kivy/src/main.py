@@ -1,5 +1,6 @@
 #! /home/whitealex95/anaconda3/bin/python
 import rospy
+import std_msgs.msg
 from functools import partial
 
 from kivy.app import App
@@ -16,8 +17,7 @@ from kivy.core.window import Window
 from kivy.utils import get_color_from_hex
 
 # custom msg
-from towr_gui_kivy.msg import TowrCommandGUI, TowrCommand2
-
+from towr_gui_kivy.msg import TowrCommand2
 # Clear entire color to whitish./
 Window.clearcolor = get_color_from_hex('#f0f9f9')
 
@@ -105,7 +105,7 @@ class TestApp(FloatLayout):
                     self.current_waypoint = waypoint
                     self.current_waypoint.mouse_down(touch.pos[0], touch.pos[1])
                     return True
-            
+
             # Create new waypoint if clicked on empty space
             with self.canvas:
                 SET_COLOR()
@@ -147,18 +147,45 @@ class TestApp(FloatLayout):
                 return True
             return super(TestApp, self).on_touch_move(touch)
 
-
-class Main(App):
-    def send_topic(self, e):
-        print("Publishing MSG:")
+class PublishManager:
+    def __init__(self):
         msg = TowrCommand2()
-        print(msg.goal_lin.pos.x)
         msg.goal_lin.pos.x = 1.3
         msg.goal_lin2.pos.x = 2.6
-        print(msg)
-        pub.publish(msg)
-        print("Publishing MSG Done")
 
+        msg.total_duration = 3          # reach in 3sec
+        msg.replay_trajectory = False
+        msg.replay_speed = 1            # x1.00 speed
+        msg.play_initialization = False
+        msg.plot_trajectory = False
+        msg.optimize = True             # optimize trajectory
+        msg.robot = 0                   # 0: monoped, 1: biped, 4: Aliengo
+        msg.terrain = 0
+        msg.gait = 0                    # 0: walk, 1: trot
+        msg.gait_n = 6                  # default: 6 gait blocks prob?
+        msg.optimize_phase_durations = False
+
+        self.msg = msg
+
+    def change_and_publish(self, **kwargs):
+        for key, val in kwargs.items():
+            print(key, val)
+            if key=='robot':
+                self.msg.robot = val
+            elif key=='terrain':
+                self.msg.terrain = val
+
+        pub.publish(self.msg)
+
+class SubscribeManager:
+    def __init__(self) -> None:
+        pass
+
+class Main(App):
+    def btn_callback(self, *largs, **kwargs):
+        # use it with partial()
+        print(kwargs)
+        pm.change_and_publish(**kwargs)
 
     def build(self):
         from math import cos, sin, radians
@@ -175,20 +202,19 @@ class Main(App):
         canvas = TestApp(points=points)
 
         label = Label(text='0')
+        btn_robot1 = Button(text='TOPIC1')
+        btn_robot1.bind(on_press=partial(self.btn_callback, robot=0))
 
-        btn_add500 = Button(text='TOPIC1')
-        btn_add500.bind(on_press=self.send_topic)
+        btn_robot2 = Button(text='TOPIC2')
+        btn_robot2.bind(on_press=partial(self.btn_callback, robot=1))
 
-        btn_reset = Button(text='TOPIC2')
-        btn_reset.bind(on_press=self.send_topic)
-
-        btn_stencil = Button(text='TOPIC3')
-        btn_stencil.bind(on_press=self.send_topic)
+        btn_robot3 = Button(text='TOPIC3')
+        btn_robot3.bind(on_press=partial(self.btn_callback, robot=4))
 
         layout = BoxLayout(size_hint=(1, None), height=50)
-        layout.add_widget(btn_add500)
-        layout.add_widget(btn_reset)
-        layout.add_widget(btn_stencil)
+        layout.add_widget(btn_robot1)
+        layout.add_widget(btn_robot2)
+        layout.add_widget(btn_robot3)
         layout.add_widget(label)
 
         root = BoxLayout(orientation='vertical')
@@ -198,10 +224,20 @@ class Main(App):
         root.add_widget(layout)
 
         return root
-        return 
 
+def sub_callback(msg):
+    import os
+    raw_cmd = msg.data.split(' ')  # becareful, rospy doesn't output valid error...
+    path = '~/.ros/' + raw_cmd[-1]
+    fixed_command = ' '.join(raw_cmd[:-1] + [path])
+    print("callback: ",fixed_command)
+    os.system(fixed_command)
 
 if __name__ == '__main__':
-    pub = rospy.Publisher('/button', TowrCommand2, queue_size=1)
+
+    pub = rospy.Publisher('/towr/user_command2', TowrCommand2, queue_size=1)
+    rospy.Subscriber("/towr/ros_vis_traj", std_msgs.msg.String, sub_callback)
     rospy.init_node('ros_gui_kivy', anonymous=False)
+    pm = PublishManager()
+    # sm = SubscribeManager()
     Main().run()

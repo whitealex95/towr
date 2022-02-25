@@ -105,14 +105,13 @@ void plan2(ifopt::Problem& nlp, SplineHolder& solution, SplineHolder& last_solut
   solver->Solve(nlp);
 }
 
-void solve_trajectory(ifopt::Problem& nlp, SplineHolder& solution,
+void solve_trajectory(NlpFormulation& formulation, ifopt::Problem& nlp, SplineHolder& solution,
                       State::VectorXd init_base_linear, State::VectorXd init_base_angular,
                       // double init_x, double init_y, double init_z, double init_r, double init_p, double init_y,
                       State::VectorXd init_ee_W,
                       State::VectorXd final_base_linear, State::VectorXd final_base_angular){
                       // double fin_x, double fin_y, double fin_z,
                       // double fin_roll, double fin_pitch, double fin_yaw){
-  NlpFormulation formulation;
   formulation.terrain_ = std::make_shared<FlatGround>(0.0);
   formulation.model_ = RobotModel(RobotModel::Monoped);
 
@@ -170,15 +169,20 @@ double print_trajectory(SplineHolder& solution, double t_start){ // return t_dur
 
 int main()
 {
-  ::std::vector<ifopt::Problem> nlp_list(2);
-  ::std::vector<SplineHolder> solution_list(2);
+  ::std::vector<::Eigen::Vector3d> goal_base_linear_list = {{0, 1, -1}, {0, 2, -1}}; // z-position ignored
+  ::std::vector<::Eigen::Vector3d> goal_base_angular_list = {{0, 0, 0}, {0, 0, 0}};
+
+  int n_goals = goal_base_linear_list.size();
+
+  // We can dynamically size vectors!
+  ::std::vector<NlpFormulation> formulation_list(n_goals);
+  ::std::vector<ifopt::Problem> nlp_list(n_goals);
+  ::std::vector<SplineHolder> solution_list(n_goals);
 
   State::VectorXd init_base_linear(3);
   State::VectorXd init_base_angular(3);
   State::VectorXd init_ee_W(3);
 
-  ::std::vector<::Eigen::Vector3d> goal_base_linear_list = {{0, 1, -1}, {0, 2, -1}}; // z-position ignored
-  ::std::vector<::Eigen::Vector3d> goal_base_angular_list = {{0, 0, 0}, {0, 0, 0}};
 
 
   init_base_linear << 0, 0, 0.58; // z-position NOT-ignored
@@ -190,7 +194,7 @@ int main()
     auto goal_base_linear = goal_base_linear_list[j];
     auto goal_base_angular = goal_base_angular_list[j];
 
-    solve_trajectory(nlp_list[j], solution_list[j], // you should directly pass ***_list[j]
+    solve_trajectory(formulation_list[j], nlp_list[j], solution_list[j], // you should directly pass ***_list[j]
       init_base_linear, init_base_angular, init_ee_W,
       goal_base_linear, goal_base_angular);
 

@@ -17,6 +17,7 @@ find_package(catkin REQUIRED COMPONENTS
 
 ## Generate messages in the 'msg' folder
 add_message_files( FILES TowrCommand.msg )
+add_message_files( FILES TowrCommand2.msg )  # for 
 generate_messages( DEPENDENCIES std_msgs xpp_msgs )
 
 
@@ -42,6 +43,7 @@ include_directories(
 # The interface to derive from for ros integration
 add_library(${PROJECT_NAME} SHARED
   src/towr_ros_interface.cc
+  src/towr_ros_interface2.cc
 )
 add_dependencies(${PROJECT_NAME} 
   ${PROJECT_NAME}_gencpp
@@ -59,6 +61,18 @@ add_dependencies(towr_ros_app
   ${PROJECT_NAME}_gencpp
 )
 target_link_libraries(towr_ros_app
+  ${catkin_LIBRARIES}
+  ${PROJECT_NAME}
+)
+
+# For multi goal
+add_executable(towr_ros_app2
+  src/towr_ros_app2.cc
+)
+add_dependencies(towr_ros_app2
+  ${PROJECT_NAME}_gencpp
+)
+target_link_libraries(towr_ros_app2
   ${catkin_LIBRARIES}
   ${PROJECT_NAME}
 )
@@ -125,6 +139,7 @@ target_link_libraries(rosbag_geom_msg_extractor
 # Mark library for installation
 install(
   TARGETS towr_ros_app
+          towr_ros_app2  # for multi goal
           towr_user_interface
           rviz_terrain_publisher
           goal_pose_publisher
