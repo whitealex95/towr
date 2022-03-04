@@ -145,8 +145,8 @@ TowrRosInterfaceSeq::UserCommandCallback(const TowrCommandSeqMsg& msg)
       // just publish command instead of running it itself
       std_msgs::String str;
       str.data = command;
-      bag_command_pub_.publish(str);
-      // int success = system(command.c_str());
+      bag_command_pub_.publish(str);  // GUI or scheduler will take charge of playing bags
+      // int success = system(command.c_str());  // do not directly run
     }
 
     // Prepare for next iteration

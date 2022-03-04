@@ -3,6 +3,9 @@ import rospy
 
 input_bag_list = ['/home/whitealex95/.ros/towr_trajectory-0.bag',
                   '/home/whitealex95/.ros/towr_trajectory-1.bag',
+                  '/home/whitealex95/.ros/towr_trajectory-2.bag',
+                  '/home/whitealex95/.ros/towr_trajectory-3.bag',
+                  '/home/whitealex95/.ros/towr_trajectory-4.bag',
                   ]
 
 output_bag = '/home/whitealex95/.ros/towr_trajectory-merged.bag'
