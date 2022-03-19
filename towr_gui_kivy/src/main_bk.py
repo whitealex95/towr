@@ -1,5 +1,4 @@
 #! /home/whitealex95/anaconda3/bin/python
-from mimetypes import init
 import rospy
 import std_msgs.msg
 from functools import partial
@@ -11,10 +10,9 @@ from kivy.uix.floatlayout import FloatLayout
 from kivy.uix.button import Button
 from kivy.uix.label import Label
 from kivy.uix.textinput import TextInput
-from kivy.uix.widget import Widget
 
 from kivy.uix.slider import Slider
-from kivy.graphics import Color, Bezier, Line, Rectangle, Ellipse, InstructionGroup
+from kivy.graphics import Color, Bezier, Line, Rectangle, Ellipse
 
 from kivy.core.window import Window
 from kivy.utils import get_color_from_hex
@@ -22,102 +20,197 @@ from kivy.utils import get_color_from_hex
 # custom msg
 from towr_gui_kivy.msg import TowrCommand2, TowrCommandSeq
 from xpp_msgs.msg import StateLin3d
-
-from utils.waypoint import SET_POINT_COLOR, WayPoint, WayPointManager
-from utils.traj import TrajectoryManager
-
-
 # Clear entire color to whitish./
 Window.clearcolor = get_color_from_hex('#f0f9f9')
 
 POINT_SIZE = 10
 # SET_UNACTIVE_COLOR = lambda : Color(0, 1, 0)
 # SET_ACTIVE_COLOR = lambda : Color(1, 0, 0)
-SET_AXIS_COLOR = lambda : Color(0.2, 0.2, 0.2)
 SET_COLOR = lambda : Color(0, 0, 0)
 SET_INIT_POINT_COLOR = lambda : Color(1, 0, 0)
 SET_LINE_COLOR = lambda : Color(0, 0, 1)
 
 BUTTON_COLOR = (129/255, 212/255, 250/255, 1)
 
+
+class WayPoint:
+    def __init__(self, x, y, size=(15,15), vx=0, vy=0 , roll=0, pitch=0, yaw=0):
+        print("Creating New Waypoint")
+        self.x = x
+        self.y = y
+        self.z = 0 # ignore it
+        self.vx = vx
+        self.vy = vy
+        self.roll = roll
+        self.pitch = pitch
+        self.yaw = yaw  # probabily just going to use yaw only....
+        self.size = size
+        self.active = False
+        # self.disp = Rectangle(pos=(self.x,self.y), size=self.size)
+        self.disp = Ellipse(pos=self.disp_center, size=self.size)
+    
+    @property
+    def disp_center(self):
+        return (self.x-self.size[0]/2, self.y-self.size[1]/2)
+
+    @property
+    def world_pos(self):
+        return canvas2world([self.x, self.y, self.z])
+        
+    @property
+    def world_ang(self):
+        return [self.roll, self.pitch, self.yaw]
+
+    def mouse_down(self, touch_x, touch_y):
+        self.active = True
+        self.touch_x_prev = touch_x
+        self.touch_y_prev = touch_y
+
+    def mouse_drag(self, touch_x, touch_y):
+        self.x += touch_x - self.touch_x_prev
+        self.y += touch_y - self.touch_y_prev
+        self.touch_x_prev = touch_x
+        self.touch_y_prev = touch_y
+
+        self.disp.pos= (self.x - self.size[0], self.y - self.size[1])
+        self.disp.size = (self.size[0] * 2, self.size[1] * 2)
+        print("dragging: ", self.x, self.y)
+
+    def mouse_up(self):
+        self.touch_x_prev = None
+        self.touch_y_prev = None
+        
+        self.active = False
+
+        self.disp.pos = self.disp_center
+        self.disp.size = self.size
+
 class MouseManager():
     def __init__(self) -> None:
         # Todo: use mouse separate class for complicated operation
         pass
 
-
 s = [50, 50, 1]
 t = [250, 275, 0]
+def world2canvas(world_pos):
+    print(world_pos)
+    return [s[j] * d + t[j] for j, d in enumerate(world_pos)]
 
-class AxisManager():
-    def __init__(self, canvas):
-        self.canvas = canvas
-        self.c_scale = s
-        self.c_origin = t
-        self.draw_axis()
-
-        
-    def draw_axis(self):
-        with self.canvas:
-            SET_AXIS_COLOR()
-            self.x_axis = Line(points=[0, self.c_origin[1], 
-                                    3*self.c_origin[0], self.c_origin[1]],
-                                width=0.7)
-            self.y_axis = Line(points=[self.c_origin[0], 0,
-                                    self.c_origin[0], 3*self.c_origin[1]],
-                                width=0.7)
+def canvas2world(canvas_pos):
+    print(canvas_pos)
+    return [(d - t[j]) / s[j] for j, d in enumerate(canvas_pos)]
 
 class TestApp(FloatLayout):
+
     def __init__(self, waypoints_pos, waypoints_ang, *args, **kwargs):
         super(TestApp, self).__init__(*args, **kwargs)
         self.d = 10  # pixel tolerance when clicking on a point
-        self.axisgrid = AxisManager(self.canvas)
-        self.wm = WayPointManager(waypoints_pos, waypoints_ang, self.canvas)
-        self.tm = TrajectoryManager(self.wm.waypoints[1],
-                                    canvas=self.canvas)
+        initpoint_pos = [0, 0, 0]
+        self.waypoints = []
+        self.current_waypoint = None
+        Color(1.0, 1.0, 1.0)
+        with self.canvas:
+            line_points = []
+            SET_INIT_POINT_COLOR()
+            point = world2canvas(initpoint_pos)
+            self.initpoint = WayPoint(point[0], point[1])
+            line_points.extend([point[0], point[1]])
+            SET_COLOR()
+            for pos, ang in list(zip(waypoints_pos, waypoints_ang)):
+                point = world2canvas(pos)
+                print("debug")
+                print(point)
+                self.waypoints.append(WayPoint(point[0], point[1], roll=ang[0], pitch=ang[1], yaw=ang[2]))
+                line_points.extend([point[0], point[1]])
+
+            SET_LINE_COLOR()
+            self.line = Line(
+                    points=line_points,
+                    width = 2
+                    ) #,
+
+                    # dash_offset=10,
+                    # dash_length=100)
+            print("HIHIHIHIHI")
+            print(self.center)
+    
+    def clear_waypoints(self):
+        print("clearing objects")
+        self.waypoints.clear()
+        self.current_waypoint = None
+
+        print("clearing canvas")
+        self.canvas.clear()
+        with self.canvas:
+            SET_LINE_COLOR()
+            self.line = Line(points=[],
+                        dash_offset=10,
+                        dash_length=100)
+
+    def debug_coordinate(self):
+        print(self.x, self.y)
+        print(self.pos)
         print(self.center)
 
-        Window.bind(on_key_down = self._on_keyboard_down)
+    def add_waypoint(self, pos:list, ang:list=[0,0,0]):
+        with self.canvas:
+            SET_COLOR()
 
-    @property
-    def waypoints(self):
-        return self.wm.waypoints
+            self.debug_coordinate()
 
-    def clear_waypoints(self):
-        self.wm.clear_waypoints()
+            new_waypoint = WayPoint(x=pos[0], y=pos[1], roll=ang[0], pitch=ang[1], yaw=ang[2])
+            self.waypoints.append(new_waypoint)
 
-    def _on_keyboard_down(self, instance, keyboard, keycode, text, modifiers):
-        print(text)
-        if text in ['w', 'a', 's', 'd']:
-            self.tm.update_traj(text)
+            line_points = []
+            for waypoint in self.waypoints:
+                line_points.extend([waypoint.x, waypoint.y])
+            self.line.points=line_points
+        self.current_waypoint = new_waypoint
+        return new_waypoint
+
 
     def on_touch_down(self, touch):
-        touch_x, touch_y = touch.pos
         if self.collide_point(touch.pos[0], touch.pos[1]):
             # Check if any waypoint is clicked. Selection based on waypoint order
-            if self.wm.check_waypoint_clicked(touch_x, touch_y, self.d):
-                return True
-            self.wm.add_waypoint_c(c_pos = touch.pos)
+            for waypoint in self.waypoints:
+                p = (waypoint.x, waypoint.y)
+                if (abs(touch.pos[0] - p[0]) < self.d and
+                        abs(touch.pos[1] - p[1]) < self.d):
+                # Original Code:
+                # if (abs(touch.pos[0] - self.pos[0] - p[0]) < self.d and
+                #         abs(touch.pos[1] - self.pos[1] - p[1]) < self.d):
+                    self.current_waypoint = waypoint
+                    self.current_waypoint.mouse_down(touch.pos[0], touch.pos[1])
+                    return True
+
+            # Create new waypoint if clicked on empty space
+            self.add_waypoint(pos=touch.pos)
+            self.current_waypoint.mouse_down(touch.pos[0], touch.pos[1])
             return True
-        # return super(TestApp, self).on_touch_down(touch)
+            # return super(TestApp, self).on_touch_down(touch)
         else:
             print("Out of Canvas")
             
 
     def on_touch_up(self, touch):
         if self.collide_point(touch.pos[0], touch.pos[1]):
-            if self.wm.clicked_wp is not None:
-                self.wm.clicked_wp.mouse_up()
-                self.wm.clicked_wp = None
+            if self.current_waypoint:
+                with self.canvas:
+                    self.current_waypoint.mouse_up()
+                self.current_waypoint = None
                 return True
             return super(TestApp, self).on_touch_up(touch)
 
     def on_touch_move(self, touch):
         if self.collide_point(touch.pos[0], touch.pos[1]):
-            # modify waypoint
-            if self.wm.clicked_wp is not None:
-                self.wm.clicked_wp.mouse_drag(touch.pos[0], touch.pos[1])
-                self.wm.update_lines()
+            if self.current_waypoint:
+                with self.canvas:
+                    self.current_waypoint.mouse_drag(touch.pos[0], touch.pos[1])
+
+                line_points = []
+                for waypoint in self.waypoints:
+                    line_points.extend([waypoint.x, waypoint.y])
+                self.line.points=line_points
 
                 return True
             return super(TestApp, self).on_touch_move(touch)
@@ -145,7 +238,7 @@ class PublishManager_bk:
         # msg.optimize_phase_durations = True
 
         self.msg = msg
-
+    
 
     def change_and_publish(self, **kwargs):
         for key, val in kwargs.items():
@@ -225,50 +318,37 @@ class Main(App):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         PI = 3.14
-        waypoints_pos = [
-                        [0, 0, 0],  # init point
-                        [1, 0, 0],
-                        ]
-        waypoints_ang = [
-                        [0, 0, 0],  # init point
-                        [0, 0, 0],
-                        ]
+        waypoints_pos = [[1, 0, 0],
+                        [1, 1, 0],#,
+                        [0, 1, 0],#,
+                        [0, 0, 0],#,
+                        [1, 0, 0]]
 
-        # waypoints_pos = [
-        #                 [0, 0, 0],  # init point
-        #                 [1, 0, 0],
-        #                 [1, 1, 0],#,
-        #                 [0, 1, 0],#,
-        #                 [0, 0, 0],#,
-        #                 [1, 0, 0]]
-
-        # waypoints_ang = [
-        #                 [0, 0, 0],  # init point
-        #                 [0, 0, PI/2],
-        #                 [0, 0, PI],
-        #                 [0, 0, PI*3/2],
-        #                 [0, 0, PI*2],
-        #                 [0, 0, PI*5/2]]
-        self.map = TestApp(waypoints_pos, waypoints_ang)
-        self.map_editor = self.build_right_layout()
+        waypoints_ang = [[0, 0, PI/2],
+                         [0, 0, PI],
+                         [0, 0, PI*3/2],
+                         [0, 0, PI*2],
+                         [0, 0, PI*5/2]]
+        self.canvas = TestApp(waypoints_pos, waypoints_ang)
+        self.canvas_editor = self.build_right_layout()
 
 
     def btn_callback_publish(self, *largs, **kwargs):
         # use it with partial()
         print(kwargs)
-        pm.set_waypoints(self.map.waypoints)
+        pm.set_waypoints(self.canvas.waypoints)
         pm.change_and_publish(**kwargs)
 
     def btn_callback_clear(self, *largs, **kwargs):
         print("clear clicked")
-        self.map.clear_waypoints()
+        self.canvas.clear_waypoints()
 
     def btn_callback_add(self, *largs, **kwargs):
         print("add clicked")
-        print(self.map.center_x, self.map.center_y)
-        pos = [self.map.center_x, self.map.center_y]
+        print(self.canvas.center_x, self.canvas.center_y)
+        pos = [self.canvas.center_x, self.canvas.center_y]
         ang = [0, 0, 0]
-        self.map.add_waypoint(pos, ang)
+        self.canvas.add_waypoint(pos, ang)
 
     def build_bottom_layout(self):
         # Buttons for Sending Topic Messages
@@ -303,9 +383,9 @@ class Main(App):
 
         right_layout.add_widget(l1)
 
-        n_waypoints = len(self.map.waypoints)
+        n_waypoints = len(self.canvas.waypoints)
         l2_list = [None] * n_waypoints
-        for i, waypoint in enumerate(self.map.waypoints):
+        for i, waypoint in enumerate(self.canvas.waypoints):
             pos = waypoint.world_pos
             ang = waypoint.world_ang
             l2 = BoxLayout(orientation='vertical', size_hint=(1, None), height=90)
@@ -368,7 +448,7 @@ class Main(App):
         main_layout = BoxLayout(orientation='horizontal')
         # let's wrap this...
         rfl = FloatLayout()
-        rfl.add_widget(self.map)
+        rfl.add_widget(self.canvas)
         main_layout.add_widget(rfl)
 
         # Right layout for setting up stuffs
@@ -399,8 +479,8 @@ def sub_callback(msg):
 
 if __name__ == '__main__':
 
-    # pub = rospy.Publisher('/towr/user_command_seq', TowrCommandSeq, queue_size=1)
-    # rospy.Subscriber("/towr/ros_vis_traj", std_msgs.msg.String, sub_callback)
-    # rospy.init_node('ros_gui_kivy', anonymous=False)
+    pub = rospy.Publisher('/towr/user_command_seq', TowrCommandSeq, queue_size=1)
+    rospy.Subscriber("/towr/ros_vis_traj", std_msgs.msg.String, sub_callback)
+    rospy.init_node('ros_gui_kivy', anonymous=False)
     pm = PublishManager()
     Main().run()

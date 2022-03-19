@@ -24,7 +24,7 @@ from towr_gui_kivy.msg import TowrCommand2, TowrCommandSeq
 from xpp_msgs.msg import StateLin3d
 
 from utils.waypoint import SET_POINT_COLOR, WayPoint, WayPointManager
-from utils.traj import TrajectoryManager
+from utils.traj import TrajectoryManager, TRAJ_STEP_SIZE
 
 
 # Clear entire color to whitish./
@@ -87,9 +87,18 @@ class TestApp(FloatLayout):
         self.wm.clear_waypoints()
 
     def _on_keyboard_down(self, instance, keyboard, keycode, text, modifiers):
-        print(text)
         if text in ['w', 'a', 's', 'd']:
             self.tm.update_traj(text)
+        if text == ' ':
+            self.proceed_next_trajectory()
+    
+    def proceed_next_trajectory(self):
+        next_x, next_y, next_yaw = self.tm.traj.future_pos_angs[0]
+        # __import__('pdb').set_trace()
+        new_wp = self.wm.add_waypoint([next_x, next_y], 
+                            ang=[0, 0, next_yaw],
+                            coord_type='w')
+        self.tm.update_current_waypoint(new_wp)
 
     def on_touch_down(self, touch):
         touch_x, touch_y = touch.pos
@@ -123,44 +132,11 @@ class TestApp(FloatLayout):
             return super(TestApp, self).on_touch_move(touch)
 
 
-class PublishManager_bk:
-    def __init__(self):
-        msg = TowrCommand2()
-        msg.goal_lin.pos.x = 1.3
-        msg.goal_lin2.pos.x = 2.6
-
-        # msg.total_duration = 3          # reach in 3sec
-        msg.total_duration = 4          # reach in 3sec
-        msg.replay_trajectory = False
-        msg.replay_speed = 1            # x1.00 speed
-        msg.play_initialization = False
-        msg.plot_trajectory = False
-        msg.optimize = True             # optimize trajectory
-        msg.robot = 0                   # 0: monoped, 1: biped, 4: Aliengo
-        msg.terrain = 0
-        msg.gait = 1                    # 0: walk, 1: trot
-        # msg.gait_n = 8                  # default: 6 gait blocks prob?
-        msg.gait_n = 12                  # default: 6 gait blocks prob?
-        msg.optimize_phase_durations = False
-        # msg.optimize_phase_durations = True
-
-        self.msg = msg
-
-
-    def change_and_publish(self, **kwargs):
-        for key, val in kwargs.items():
-            print(key, val)
-            if key=='robot':
-                self.msg.robot = val
-            elif key=='terrain':
-                self.msg.terrain = val
-
-        pub.publish(self.msg)
-
 
 class PublishManager:
     def __init__(self):
         msg = TowrCommandSeq()
+        N = 1 / TRAJ_STEP_SIZE
         for j in range(3):
             goal_lin = StateLin3d()
             goal_lin.pos.x = (j+1) * 1.3
@@ -170,7 +146,7 @@ class PublishManager:
             msg.goal_ang_seq.append(goal_ang)
 
         # msg.total_duration = 3          # reach in 3sec
-        msg.total_duration = 3          # reach in 3sec
+        msg.total_duration = 3 / N         # reach in 3sec
         msg.replay_trajectory = False
         msg.replay_speed = 1            # x1.00 speed
         msg.play_initialization = False
@@ -180,8 +156,8 @@ class PublishManager:
         msg.terrain = 0
         msg.gait = 0                    # 0: walk, 1: trot
         msg.gait = 1                    # 0: walk, 1: trot
-        msg.gait_n = 9                  # default: 6 gait blocks prob?
-        # msg.gait_n = 9                  # default: 6 gait blocks prob?
+        # msg.gait_n = int(9 / N)                 # default: 6 gait blocks prob?
+        msg.gait_n = 6                  # default: 6 gait blocks prob?
         msg.optimize_phase_durations = False
         # msg.optimize_phase_durations = True
 
@@ -192,8 +168,9 @@ class PublishManager:
         self.msg.goal_ang_seq.clear()
 
         for waypoint in waypoints:
+            print('here')
             goal_lin = StateLin3d()
-            [x,y,z] = waypoint.world_pos
+            [x,y,z] = waypoint.world_pos + [0]
             goal_lin.pos.x = x
             goal_lin.pos.y = y
             goal_lin.pos.z = z
@@ -227,7 +204,7 @@ class Main(App):
         PI = 3.14
         waypoints_pos = [
                         [0, 0, 0],  # init point
-                        [1, 0, 0],
+                        [TRAJ_STEP_SIZE, 0, 0],
                         ]
         waypoints_ang = [
                         [0, 0, 0],  # init point
@@ -256,7 +233,7 @@ class Main(App):
     def btn_callback_publish(self, *largs, **kwargs):
         # use it with partial()
         print(kwargs)
-        pm.set_waypoints(self.map.waypoints)
+        pm.set_waypoints(self.map.waypoints[1:])
         pm.change_and_publish(**kwargs)
 
     def btn_callback_clear(self, *largs, **kwargs):
@@ -399,8 +376,8 @@ def sub_callback(msg):
 
 if __name__ == '__main__':
 
-    # pub = rospy.Publisher('/towr/user_command_seq', TowrCommandSeq, queue_size=1)
-    # rospy.Subscriber("/towr/ros_vis_traj", std_msgs.msg.String, sub_callback)
-    # rospy.init_node('ros_gui_kivy', anonymous=False)
+    pub = rospy.Publisher('/towr/user_command_seq', TowrCommandSeq, queue_size=1)
+    rospy.Subscriber("/towr/ros_vis_traj", std_msgs.msg.String, sub_callback)
+    rospy.init_node('ros_gui_kivy', anonymous=False)
     pm = PublishManager()
     Main().run()

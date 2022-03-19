@@ -71,7 +71,7 @@ GaitGenerator::VecTimes
 GaitGenerator::GetNormalizedPhaseDurations (EE ee) const
 {
   auto v = GetPhaseDurations().at(ee); // shorthand
-  std::cout << "GetPhaseDurations size: " << v.size() << std::endl; // 
+  // std::cout << "GetPhaseDurations size: " << v.size() << std::endl; // 
   double total_time = std::accumulate(v.begin(), v.end(), 0.0);
   std::transform(v.begin(), v.end(), v.begin(),
                  [total_time](double t_phase){ return t_phase/total_time;});
@@ -84,8 +84,8 @@ GaitGenerator::GetPhaseDurations () const
 {
   int n_ee = contacts_.front().size();
   VecTimes d_accumulated(n_ee, 0.0);
-  std::cout << "contacts_.size() : " << contacts_.size() << std::endl;
-  std::cout << "contacts_.front().size() = n_ee : " << n_ee << std::endl;
+  // std::cout << "contacts_.size() : " << contacts_.size() << std::endl;
+  // std::cout << "contacts_.front().size() = n_ee : " << n_ee << std::endl;
   FootDurations foot_durations(n_ee);
   for (int phase=0; phase<contacts_.size()-1; ++phase) {
     ContactState curr = contacts_.at(phase);
@@ -132,19 +132,19 @@ GaitGenerator::SetGaits (const std::vector<Gaits>& gaits)
 
     times_.insert      (times_.end(), t.begin(), t.end());
     contacts_.insert(contacts_.end(), c.begin(), c.end());
-    ::std::cout << times_.size() << " ";
+    // ::std::cout << times_.size() << " ";
   }
-  ::std::cout << times_.size() << " Times:\n";
-  for (auto t : times_) {
-    ::std::cout << t << ::std::endl;
-  }
-  ::std::cout << "\n" << contacts_.size() << " EE Contacts:\n";
-  for (auto c : contacts_) {
-    for (auto cc : c) {
-    ::std::cout << cc << " ";
-    }
-    ::std::cout << ::std::endl;
-  }
+  // ::std::cout << times_.size() << " Times:\n";
+  // for (auto t : times_) {
+  //   ::std::cout << t << ::std::endl;
+  // }
+  // ::std::cout << "\n" << contacts_.size() << " EE Contacts:\n";
+  // for (auto c : contacts_) {
+  //   for (auto cc : c) {
+  //   ::std::cout << cc << " ";
+  //   }
+  //   ::std::cout << ::std::endl;
+  // }
 }
 
 GaitGenerator::GaitInfo

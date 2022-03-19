@@ -33,7 +33,7 @@
   <include file="$(find xpp_aliengo)/launch/all.launch"></include>
        
 
-  <node pkg="towr_gui_kivy" name="main" type="main.py" output="screen">
+  <node pkg="towr_gui_kivy" name="main" type="main.py" output="screen"></node>
   <node pkg="towr_gui_kivy" name="vis_pub_queue" type="vis_pub_queue.py" output="screen">
   </node>
 

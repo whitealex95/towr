@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Spline Visualizer</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/10.0.1/math.js"></script>
+    <!-- Bootstrap CSS CDN -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.0/css/bootstrap.min.css" integrity="sha384-9gVQ4dYFwwWSjIDZnLEWnxCjeSWFphJiwGPXr1jddIhOegiu1FwO5qRGvFXOdJZ4" crossorigin="anonymous">
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.slim.js" integrity="sha256-HwWONEZrpuoh951cQD1ov2HUK5zA5DwJ1DNUXaM6FsY=" crossorigin="anonymous"></script>
+    <!-- Font Awesome JS -->
+    <script defer src="https://use.fontawesome.com/releases/v5.0.13/js/solid.js" integrity="sha384-tzzSw1/Vo+0N5UhStP3bvwWPq+uvzCMfrN1fEFe+xBmv1C/AtVX5K0uZtmcHitFZ" crossorigin="anonymous"></script>
+    <script defer src="https://use.fontawesome.com/releases/v5.0.13/js/fontawesome.js" integrity="sha384-6OIrr52G08NpOFSZdxxz1xdNSndlD4vdcf/q2myIUVO0VsqaGHJsB0RaBE01VTOY" crossorigin="anonymous"></script>
+    <!-- Bootstrap JS -->
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.0/js/bootstrap.min.js" integrity="sha384-uefMccjFJAIv6A+rW+L4AHf99KvxDjWSu1z9VI8SKNVmz4sk7buKt/6v9KI65qnm" crossorigin="anonymous"></script>
+
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="nav.css"> 
+    <script src="nav.js"></script> 
+  </head>
+
+  <body>
+    <div class="wrapper">
+      <h1>Computer Animation Project 1</h1>
+      <p id="counter">Number of Control Points: </p>
+      <!-- Sidebar  -->
+      <div id="sidebar-wrapper">
+      <nav id="sidebar">
+        <div class="sidebar-header">
+            <h3>Spline Visualizer</h3>  
+        </div>
+        <div class="sidebar-body">
+          <ul class="list-unstyled components">
+            <li class="active">
+                <a href="#homeSubmenu" data-toggle="collapse" aria-expanded="false" class="dropdown-toggle">
+                    <i class="fas fa-home"></i>
+                    Examples
+                </a>
+                <ul class="collapse list-unstyled" id="homeSubmenu">
+                    <li>
+                        <a href="#" onclick="example(1)">Example 1</a>
+                    </li>
+                    <li>
+                      <a href="#" onclick="example(2)">Example 2</a>
+                    </li>
+                    <li>
+                      <a href="#" onclick="example(3)">Example 3</a>
+                    </li>
+                </ul>
+            </li>
+            <br>
+            <h4 style="padding-left:10px">Curve Types:</h4>
+            <div style="padding:10px; background-color: #ededed; font-weight: bold; font-size: 1.2rem;">
+              <span style="color:orange; font-size: 1.2rem;">Orange: Line</span>
+              <input type="checkbox" id="line" checked="checked"><br>
+              <span style="color:purple;">Purple: Bezier</span>
+              <input type="checkbox" id="bezier"><br>
+              <span style="color:green;">Green: B-spline</span>
+              <input type="checkbox" id="bspline"><br>
+              <span style="color:blue;">Green: Catmull-Rom</span>
+              <input type="checkbox" id="crspline" checked="checked"><br>
+            </div>
+        </ul>
+        <div style="padding:10px; background-color: #ededed; font-size: 1rem; color: #494949">
+          <span style="font-weight: bold;">Tips:</span><br>
+          - Scroll to scale coordinates<br>
+          - Drag using middle(scroll) button to traverse coordinates<br>
+          - Filled circle denotes "selected" control point.<br>
+          - Click on control points to select.<br>
+          - Press 'x' to delete selected control point<br>
+          - You can add new control point after selected point by clicking on empty space
+        </div>
+        </div>
+      </nav>
+      <button type="button" id="sidebarCollapse" class="btn btn-info">
+        <i class="fas fa-align-left"></i>
+        <!-- <span>Toggle Sidebar</span> -->
+      </button>
+    </div>
+
+
+      <div class="container-fluid" style="position:absolute; margin:0; padding:0;">
+
+        <canvas></canvas>
+      </div>
+      <!-- <script src="main_mouse.js"></script> -->
+      <script src="main.js"></script>
+    </div>
+  </body>
+</html>
