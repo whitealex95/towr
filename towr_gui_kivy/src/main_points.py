@@ -1,4 +1,4 @@
-#! /home/whitealex95/anaconda3/bin/python
+#! /home/whitealex95/miniconda3/bin/python
 import rospy
 import std_msgs.msg
 from functools import partial
@@ -318,17 +318,20 @@ class Main(App):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         PI = 3.14
+        # Start: [0, 0, 0]
+        scale = -1
         waypoints_pos = [[1, 0, 0],
                         [1, 1, 0],#,
                         [0, 1, 0],#,
-                        [0, 0, 0],#,
-                        [1, 0, 0]]
+                        [0, 0, 0]]#,#,
+                        # [1, 0, 0]]
+        waypoints_pos = [[scale * i for i in l] for l in waypoints_pos]
 
         waypoints_ang = [[0, 0, PI/2],
                          [0, 0, PI],
                          [0, 0, PI*3/2],
-                         [0, 0, PI*2],
-                         [0, 0, PI*5/2]]
+                         [0, 0, PI*2]]#,
+                        #  [0, 0, PI*5/2]]
         self.canvas = TestApp(waypoints_pos, waypoints_ang)
         self.canvas_editor = self.build_right_layout()
 

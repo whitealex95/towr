@@ -1,4 +1,4 @@
-#! /home/whitealex95/anaconda3/bin/python
+#! /home/whitealex95/miniconda3/bin/python
 import rospy
 import std_msgs.msg
 from functools import partial

@@ -32,7 +32,8 @@ TowrRosInterfaceSeq::TowrRosInterfaceSeq ()
                                     (xpp_msgs::robot_parameters, 1);
   solver_ = std::make_shared<ifopt::IpoptSolver>();
   // solver_ = std::make_shared<ifopt::SnoptSolver>();
-  visualization_dt_ = 0.01;
+  // visualization_dt_ = 0.01;  // 100 FPS
+  visualization_dt_ = 1.0/60; // Match 60 FPS as in MANN
 }
 
 ::std::vector<BaseState>

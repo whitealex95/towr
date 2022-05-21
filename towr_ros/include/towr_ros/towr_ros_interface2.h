@@ -43,7 +43,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <towr/nlp_formulation.h>
 #include <ifopt/ipopt_solver.h>
-#include <ifopt/snopt_solver.h>
+// #include <ifopt/snopt_solver.h>
 
 
 namespace towr {

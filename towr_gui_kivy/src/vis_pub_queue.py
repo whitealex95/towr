@@ -1,6 +1,5 @@
-from time import sleep
-from nbformat import read
-from sqlalchemy import false
+#! /home/whitealex95/miniconda3/bin/python
+
 import rosbag
 import rospy
 from xpp_msgs.msg import RobotStateCartesian, RobotParameters
