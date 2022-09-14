@@ -84,6 +84,7 @@ public:
                    ChimneyID,
                    ChimneyLRID,
                    GTStairsID,
+                   GTStairs2ID,
                    Obstacle1ID,
                    Obstacle2ID,
                    TERRAIN_COUNT };
@@ -184,6 +185,7 @@ const static std::map<HeightMap::TerrainID, std::string> terrain_names =
   {HeightMap::ChimneyID,     "Chimney"    },
   {HeightMap::ChimneyLRID,   "ChimenyLR"  },
   {HeightMap::GTStairsID,    "GTStairs"   },
+  {HeightMap::GTStairs2ID,   "GTStairs2"  },
   {HeightMap::Obstacle1ID,   "Obstacle1"  },
   {HeightMap::Obstacle2ID,   "Obstacle2"  },
 };
