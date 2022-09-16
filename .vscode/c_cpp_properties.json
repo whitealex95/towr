@@ -1,0 +1,32 @@
+{
+  "configurations": [
+    {
+      "browse": {
+        "databaseFilename": "${default}",
+        "limitSymbolsToIncludedHeaders": false
+      },
+      "includePath": [
+        "/home/whitealex95/catkin_ws/devel_isolated/towr_ros/include/**",
+        "/home/whitealex95/catkin_ws/devel_isolated/towr_gui_kivy/include/**",
+        "/home/whitealex95/catkin_ws/devel_isolated/xpp_msgs/include/**",
+        "/opt/ros/noetic/include/**",
+        "/home/whitealex95/catkin_ws/devel_isolated/towr/include/**",
+        "/home/whitealex95/catkin_ws/devel_isolated/ifopt/include/**",
+        "/home/whitealex95/catkin_ws/src/towr/towr_ros/include/**",
+        "/home/whitealex95/catkin_ws/src/xpp/robots/xpp_aliengo/include/**",
+        "/home/whitealex95/catkin_ws/src/xpp/robots/xpp_hyq/include/**",
+        "/home/whitealex95/catkin_ws/src/xpp/robots/xpp_minimal/include/**",
+        "/home/whitealex95/catkin_ws/src/xpp/xpp_msgs/include/**",
+        "/home/whitealex95/catkin_ws/src/xpp/xpp_states/include/**",
+        "/home/whitealex95/catkin_ws/src/xpp/xpp_vis/include/**",
+        "/usr/include/**"
+      ],
+      "name": "ROS",
+      "intelliSenseMode": "gcc-x64",
+      "compilerPath": "/usr/bin/gcc",
+      "cStandard": "gnu11",
+      "cppStandard": "c++14"
+    }
+  ],
+  "version": 4
+}

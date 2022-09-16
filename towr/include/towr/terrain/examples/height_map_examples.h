@@ -193,6 +193,12 @@ private:
   double step_width_ = 0.28;
   double step_height_ = 0.18;
   double width_top_ = 3.0;
+
+  // TODO: Set adequate margin.
+  // Adding margin Slows the Algorithm Extremely!!!!
+  double step_margin_jump_   = 0.02;
+  double step_margin_land_   = 0.01;
+  double penalty_height_ = -0.5;
 };
 
 /**

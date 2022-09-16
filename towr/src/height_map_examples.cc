@@ -26,7 +26,7 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
 OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ******************************************************************************/
-
+#include <cmath>
 #include <towr/terrain/examples/height_map_examples.h>
 
 namespace towr {
@@ -235,21 +235,42 @@ GTStairs::GetHeight (double x, double y) const
 double
 GTStairs2::GetHeight (double x, double y) const
 {
+  // GTStairs2 is designed so that actual stairs and touchable region are different.
+  // We need this because feet steping too close to next step leads to feet penatration. 
+  // Basic idea is to make "stair edges" untraversable.
+
   double h = 0.0;
-  double down_step_start_ = step_start_ + (n_steps-1)*step_width_ + width_top_;
-  if ( (x - step_start_) / step_width_ < n_steps-1 
-    && x >= step_start_)
-    h = step_height_ * int((x - step_start_) / step_width_ +1);
+  if (x < step_start_ - step_margin_jump_)
+    return 0.0;
 
-  if (x >= step_start_ + (n_steps-1)*step_width_ 
-    && x <= down_step_start_)
-    h = step_height_ * n_steps;
+  if (x < step_start_)
+    return penalty_height_;
+    
+  // after stair start
+  double distance_from_stair_start = x - step_start_;
+  // Before start
+  if (distance_from_stair_start < -step_margin_jump_)
+    return 0.0;
+  
+  // Starting margin
+  if (distance_from_stair_start < 0)
+    return penalty_height_;
 
-  if (x > down_step_start_
-    && x <= down_step_start_ + (n_steps-1)*step_width_)
-    h = step_height_*int(n_steps - (x - down_step_start_) / step_width_);
 
-  return h;
+  int current_stair_lvl = std::floor(distance_from_stair_start/ step_width_) + 1;
+  
+  // reach max step
+  if (current_stair_lvl >= n_steps) 
+    return step_height_ * n_steps;
+  
+  // set untraversable region
+  double distance_from_step_start = (distance_from_stair_start) - (current_stair_lvl-1) * step_width_;
+  double distance_to_next_step    = step_width_ - distance_from_step_start;
+  if ((distance_from_step_start > step_margin_land_) && 
+      (distance_from_step_start < step_width_ - step_margin_jump_))
+    return step_height_ * current_stair_lvl;
+  
+  return penalty_height_;
 }
 
 // Obstacle1
